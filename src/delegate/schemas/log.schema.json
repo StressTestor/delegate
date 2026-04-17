@@ -19,10 +19,10 @@
         "circuit_broken", "sha_mismatch"
       ]
     },
-    "duration_s": {"type": ["number", "null"]},
-    "tokens_in": {"type": ["integer", "null"]},
-    "tokens_out": {"type": ["integer", "null"]},
-    "cost_usd_est": {"type": ["number", "null"]},
+    "duration_s": {"type": ["number", "null"], "minimum": 0},
+    "tokens_in": {"type": ["integer", "null"], "minimum": 0},
+    "tokens_out": {"type": ["integer", "null"], "minimum": 0},
+    "cost_usd_est": {"type": ["number", "null"], "minimum": 0},
     "worktree": {"type": ["string", "null"]},
     "error": {"type": ["string", "null"]}
   }
