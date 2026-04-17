@@ -3,7 +3,7 @@ task_type = "code-gen"
 concurrency = 1
 worktree_root = "/Volumes/onn/.delegate-worktrees"
 log_path = "~/.claude/skills/delegate/state/delegate.jsonl"
-openrouter_has_credits = false
+openrouter_has_credits = false  # set true after buying $10+ credits → unlocks 1000/day
 
 [timeouts]
 code-gen = 600
@@ -17,7 +17,7 @@ halt_on_trip = true
 
 [providers.kimi-code]
 cli = "kimi"
-rpm_cap = 150
+rpm_cap = 150  # TODO verify moonshot subscription tier; Tier 1 observed = 200 rpm
 default_model = "k2p5"
 billing = "subscription"
 supports_edits = true
@@ -26,9 +26,12 @@ supports_edits = true
 cli = "opencode"
 allowlist = ["glm-5", "kimi-k2.5", "minimax-m2.5"]
 default_model = "minimax-m2.5"
-rpm_cap = 60
+rpm_cap = 60  # TODO verify — opencode go uses $-based limits, not rpm; conservative placeholder
 billing = "subscription"
 supports_edits = true
+
+  # zen-trap patterns: case-insensitive regex, substring match on stderr/stdout combined.
+  # literal substrings work as-is; use .? for optional chars (e.g. "pay.?as.?you.?go").
 zen_fail_patterns = [
   "insufficient balance",
   "no resource package",
@@ -55,7 +58,7 @@ cli = "gemini"
 model_flag = "-m"
 allowlist = ["gemini-2.5-flash"]
 default_model = "gemini-2.5-flash"
-rpm_cap = 250
+rpm_cap = 250  # TODO verify Tier 1 Flash rpm from Google AI Pro docs
 billing = "subscription"
 supports_edits = true
 
@@ -69,6 +72,7 @@ rpm_cap = 15
 billing = "free"
 supports_edits = false
 
+# code-gen: kimi first (subscription coding specialty), opencode-go + gemini-pro, free fallback last
 [[chains.code-gen]]
 provider = "kimi-code"
 model = "k2p5"
@@ -82,6 +86,7 @@ model = "gemini-2.5-pro"
 provider = "openrouter-free"
 model = "deepseek/deepseek-chat-v3.1:free"
 
+# bulk: free first (that's what free tier is for), then flash, then opencode-go
 [[chains.bulk]]
 provider = "openrouter-free"
 model = "deepseek/deepseek-chat-v3.1:free"
@@ -92,6 +97,7 @@ model = "gemini-2.5-flash"
 provider = "opencode-go"
 model = "minimax-m2.5"
 
+# research: gemini-pro first (long context wins), opencode-go, free fallback
 [[chains.research]]
 provider = "gemini-pro"
 model = "gemini-2.5-pro"
