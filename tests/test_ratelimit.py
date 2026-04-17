@@ -17,3 +17,10 @@ def test_high_rpm_effectively_no_sleep():
     for _ in range(5):
         rl.acquire()
     assert time.monotonic() - start < 0.2
+
+def test_rejects_nonpositive_rpm():
+    import pytest
+    with pytest.raises(ValueError, match="rpm must be positive"):
+        RateLimiter(rpm=0)
+    with pytest.raises(ValueError, match="rpm must be positive"):
+        RateLimiter(rpm=-1)

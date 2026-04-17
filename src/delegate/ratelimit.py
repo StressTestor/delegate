@@ -5,7 +5,14 @@ import time
 
 
 class RateLimiter:
-    """Minimum inter-request spacing based on rpm. Thread-safe."""
+    """Minimum inter-request spacing based on rpm. Thread-safe.
+
+    Holds the lock across time.sleep() by design: this serializes
+    concurrent acquirers through the gate, enforcing the rpm cap
+    globally rather than per-caller. Do not release the lock before
+    sleeping — that would let N callers all observe "no wait needed"
+    simultaneously and stampede the provider.
+    """
 
     def __init__(self, rpm: int):
         if rpm <= 0:
