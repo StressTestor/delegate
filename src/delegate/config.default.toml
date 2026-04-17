@@ -1,0 +1,103 @@
+[defaults]
+task_type = "code-gen"
+concurrency = 1
+worktree_root = "/Volumes/onn/.delegate-worktrees"
+log_path = "~/.claude/skills/delegate/state/delegate.jsonl"
+openrouter_has_credits = false
+
+[timeouts]
+code-gen = 600
+research = 300
+bulk = 180
+
+[circuit_breaker]
+window = 10
+failure_threshold = 0.5
+halt_on_trip = true
+
+[providers.kimi-code]
+cli = "kimi"
+rpm_cap = 150
+default_model = "k2p5"
+billing = "subscription"
+supports_edits = true
+
+[providers.opencode-go]
+cli = "opencode"
+allowlist = ["glm-5", "kimi-k2.5", "minimax-m2.5"]
+default_model = "minimax-m2.5"
+rpm_cap = 60
+billing = "subscription"
+supports_edits = true
+zen_fail_patterns = [
+  "insufficient balance",
+  "no resource package",
+  "quota exceeded",
+  "1008",
+  "402",
+  "opencode zen",
+  "pay.?as.?you.?go",
+  "billing_hard_limit",
+  "insufficient_quota",
+]
+
+[providers.gemini-pro]
+cli = "gemini"
+model_flag = "-m"
+allowlist = ["gemini-2.5-pro"]
+default_model = "gemini-2.5-pro"
+rpm_cap = 100
+billing = "subscription"
+supports_edits = true
+
+[providers.gemini-flash]
+cli = "gemini"
+model_flag = "-m"
+allowlist = ["gemini-2.5-flash"]
+default_model = "gemini-2.5-flash"
+rpm_cap = 250
+billing = "subscription"
+supports_edits = true
+
+[providers.openrouter-free]
+api = "https://openrouter.ai/api/v1/chat/completions"
+key_endpoint = "https://openrouter.ai/api/v1/key"
+api_key_env = "OPENROUTER_API_KEY"
+allowlist_suffix = ":free"
+default_model = "deepseek/deepseek-chat-v3.1:free"
+rpm_cap = 15
+billing = "free"
+supports_edits = false
+
+[[chains.code-gen]]
+provider = "kimi-code"
+model = "k2p5"
+[[chains.code-gen]]
+provider = "opencode-go"
+model = "minimax-m2.5"
+[[chains.code-gen]]
+provider = "gemini-pro"
+model = "gemini-2.5-pro"
+[[chains.code-gen]]
+provider = "openrouter-free"
+model = "deepseek/deepseek-chat-v3.1:free"
+
+[[chains.bulk]]
+provider = "openrouter-free"
+model = "deepseek/deepseek-chat-v3.1:free"
+[[chains.bulk]]
+provider = "gemini-flash"
+model = "gemini-2.5-flash"
+[[chains.bulk]]
+provider = "opencode-go"
+model = "minimax-m2.5"
+
+[[chains.research]]
+provider = "gemini-pro"
+model = "gemini-2.5-pro"
+[[chains.research]]
+provider = "opencode-go"
+model = "minimax-m2.5"
+[[chains.research]]
+provider = "openrouter-free"
+model = "deepseek/deepseek-chat-v3.1:free"
