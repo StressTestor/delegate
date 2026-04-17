@@ -21,7 +21,7 @@ class GeminiProvider(Provider):
     ) -> ProviderResult:
         cli = self.cfg.get("cli", "gemini")
         model_flag = self.cfg.get("model_flag", "-m")
-        cmd = [cli, model_flag, model, "-p", prompt, "-y"]
+        cmd = [cli, model_flag, model, "-y", "-p", prompt]
         start = time.monotonic()
         try:
             proc = subprocess.run(
