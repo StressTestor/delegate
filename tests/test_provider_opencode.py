@@ -46,3 +46,36 @@ def test_opencode_zen_trap_on_payg_mention(mocker, tmp_path):
     p = OpencodeProvider("opencode-go", OPENCODE_CFG)
     r = p.invoke(model="minimax-m2.5", brief={}, prompt="x", cwd=tmp_path, timeout_s=30)
     assert r.outcome == Outcome.ZEN_TRAP
+
+
+def test_opencode_rejects_when_allowlist_missing(mocker, tmp_path):
+    spy = mocker.patch("subprocess.run")
+    cfg = {"cli": "opencode", "zen_fail_patterns": ["x"]}  # no allowlist key
+    p = OpencodeProvider("opencode-go", cfg)
+    r = p.invoke(model="anything", brief={}, prompt="x", cwd=tmp_path, timeout_s=30)
+    assert r.outcome == Outcome.ALLOWLIST_VIOLATION
+    spy.assert_not_called()
+
+def test_opencode_rejects_when_allowlist_empty(mocker, tmp_path):
+    spy = mocker.patch("subprocess.run")
+    cfg = {"cli": "opencode", "allowlist": [], "zen_fail_patterns": ["x"]}
+    p = OpencodeProvider("opencode-go", cfg)
+    r = p.invoke(model="anything", brief={}, prompt="x", cwd=tmp_path, timeout_s=30)
+    assert r.outcome == Outcome.ALLOWLIST_VIOLATION
+    spy.assert_not_called()
+
+def test_opencode_zen_trap_on_bare_1008(mocker, tmp_path):
+    mocker.patch("subprocess.run", return_value=subprocess.CompletedProcess(
+        args=["opencode"], returncode=1, stdout="", stderr="request failed code 1008"
+    ))
+    p = OpencodeProvider("opencode-go", OPENCODE_CFG)
+    r = p.invoke(model="minimax-m2.5", brief={}, prompt="x", cwd=tmp_path, timeout_s=30)
+    assert r.outcome == Outcome.ZEN_TRAP
+
+def test_opencode_zen_trap_on_bare_402(mocker, tmp_path):
+    mocker.patch("subprocess.run", return_value=subprocess.CompletedProcess(
+        args=["opencode"], returncode=1, stdout="", stderr="HTTP 402 required"
+    ))
+    p = OpencodeProvider("opencode-go", OPENCODE_CFG)
+    r = p.invoke(model="minimax-m2.5", brief={}, prompt="x", cwd=tmp_path, timeout_s=30)
+    assert r.outcome == Outcome.ZEN_TRAP

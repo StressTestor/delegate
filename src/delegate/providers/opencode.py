@@ -25,8 +25,12 @@ class OpencodeProvider(Provider):
         cwd: Path,
         timeout_s: int,
     ) -> ProviderResult:
-        allowlist = self.cfg.get("allowlist", [])
-        if allowlist and model not in allowlist:
+        # Opencode is the billing-safety layer. Fail CLOSED: missing or empty
+        # allowlist means nothing is allowed (not "everything goes"). If you
+        # genuinely want to disable allowlist enforcement, delete the whole
+        # opencode-go provider config instead.
+        allowlist = self.cfg.get("allowlist")
+        if not allowlist or model not in allowlist:
             return ProviderResult(
                 outcome=Outcome.ALLOWLIST_VIOLATION,
                 detail=f"model '{model}' not in allowlist {allowlist}",
