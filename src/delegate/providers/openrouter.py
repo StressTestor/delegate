@@ -20,16 +20,38 @@ SYSTEM_PROMPT = (
 )
 
 
-def _diff_touches_only_allowed(diff_text: str, write_allowed: list[str], new_file_patterns: list[str]) -> tuple[bool, str]:
-    paths = re.findall(r"^diff --git a/\S+ b/(\S+)$", diff_text, re.M)
-    if not paths:
+def _diff_touches_only_allowed(
+    diff_text: str, write_allowed: list[str], new_file_patterns: list[str]
+) -> tuple[bool, str]:
+    """Extract every path referenced by the diff — a/ side, b/ side, rename from, rename to —
+    and require ALL of them to be in write_allowed or match a new_file_pattern.
+
+    Why check both sides: a rename diff (`rename from .env / rename to allowed.txt`) would
+    otherwise exfiltrate a sensitive file by aliasing it onto an allowlisted write target.
+    A mismatched a/b header (`diff --git a/src/secret.py b/allowed.txt`) is the same class
+    of attack. Checking every mentioned path closes both vectors.
+    """
+    headers_a = re.findall(r"^diff --git a/(\S+) b/\S+$", diff_text, re.M)
+    headers_b = re.findall(r"^diff --git a/\S+ b/(\S+)$", diff_text, re.M)
+    rename_from = re.findall(r"^rename from (\S+)$", diff_text, re.M)
+    rename_to = re.findall(r"^rename to (\S+)$", diff_text, re.M)
+    copy_from = re.findall(r"^copy from (\S+)$", diff_text, re.M)
+    copy_to = re.findall(r"^copy to (\S+)$", diff_text, re.M)
+
+    all_paths = set(headers_a) | set(headers_b) | set(rename_from) | set(rename_to) | set(copy_from) | set(copy_to)
+    if not all_paths:
         return False, "no diff headers found"
-    for p in paths:
+
+    def _allowed(p: str) -> bool:
         if p in write_allowed:
-            continue
+            return True
         if any(fnmatch.fnmatch(p, pat) for pat in new_file_patterns):
-            continue
-        return False, f"diff touches disallowed path: {p}"
+            return True
+        return False
+
+    for p in sorted(all_paths):
+        if not _allowed(p):
+            return False, f"diff touches disallowed path: {p}"
     return True, ""
 
 
@@ -98,10 +120,19 @@ class OpenrouterProvider(Provider):
                 if sc in (401, 403):
                     return ProviderResult(outcome=Outcome.AUTH_FAILURE, detail=f"HTTP {sc}")
                 return ProviderResult(outcome=Outcome.CLI_CRASH, detail=f"HTTP {sc}")
+            except httpx.RequestError as e:
+                # catch-all for ReadError, WriteError, RemoteProtocolError, DecodingError, etc.
+                return ProviderResult(outcome=Outcome.NETWORK_ERROR, detail=str(e))
 
-            data = resp.json()
-            content = data["choices"][0]["message"]["content"]
-            usage = data.get("usage", {})
+            try:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+            except (KeyError, IndexError, ValueError) as e:
+                return ProviderResult(
+                    outcome=Outcome.CLI_CRASH,
+                    detail=f"malformed response from openrouter: {e}",
+                )
+            usage = data.get("usage") or {}
             total_tokens_in += int(usage.get("prompt_tokens", 0))
             total_tokens_out += int(usage.get("completion_tokens", 0))
 

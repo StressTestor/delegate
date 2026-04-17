@@ -100,3 +100,70 @@ def test_invalid_diff_exhausts_retries(monkeypatch, mocker, tmp_path):
         timeout_s=30,
     )
     assert r.outcome == Outcome.DIFF_INVALID
+
+
+RENAME_EXFIL_DIFF = """diff --git a/.env b/foo.txt
+similarity index 100%
+rename from .env
+rename to foo.txt
+"""
+
+PATH_MISMATCH_DIFF = """diff --git a/src/secret.py b/foo.txt
+--- a/src/secret.py
++++ b/foo.txt
+@@ -0,0 +1 @@
++leaked
+"""
+
+
+def test_rejects_rename_exfil(monkeypatch, mocker, tmp_path):
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=tmp_path, check=True)
+    (tmp_path / ".env").write_text("SECRET=1")
+    (tmp_path / "foo.txt").write_text("")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp_path, check=True, capture_output=True)
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    mocker.patch("httpx.post", return_value=_mock_response(RENAME_EXFIL_DIFF))
+    p = OpenrouterProvider("openrouter-free", CFG)
+    r = p.invoke(
+        model="x:free",
+        brief={"read": [], "write_allowed": ["foo.txt"], "new_file_patterns": []},
+        prompt="x", cwd=tmp_path, timeout_s=30,
+    )
+    assert r.outcome == Outcome.DIFF_INVALID
+    # .env file must still contain its original content
+    assert (tmp_path / ".env").read_text() == "SECRET=1"
+
+
+def test_rejects_path_mismatch(monkeypatch, mocker, tmp_path):
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    mocker.patch("httpx.post", return_value=_mock_response(PATH_MISMATCH_DIFF))
+    p = OpenrouterProvider("openrouter-free", CFG)
+    r = p.invoke(
+        model="x:free",
+        brief={"read": [], "write_allowed": ["foo.txt"], "new_file_patterns": []},
+        prompt="x", cwd=tmp_path, timeout_s=30,
+    )
+    assert r.outcome == Outcome.DIFF_INVALID
+
+
+def test_malformed_response_returns_cli_crash(monkeypatch, mocker, tmp_path):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "k")
+    # Response missing "choices" key
+    resp = MagicMock(spec=httpx.Response)
+    resp.status_code = 200
+    resp.json.return_value = {"error": "something went wrong"}
+    resp.raise_for_status = MagicMock()
+    mocker.patch("httpx.post", return_value=resp)
+    p = OpenrouterProvider("openrouter-free", CFG)
+    r = p.invoke(
+        model="x:free",
+        brief={"read": [], "write_allowed": [], "new_file_patterns": []},
+        prompt="x", cwd=tmp_path, timeout_s=30,
+    )
+    assert r.outcome == Outcome.CLI_CRASH
+    assert "malformed" in r.detail
