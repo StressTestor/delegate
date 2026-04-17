@@ -23,6 +23,13 @@ def _deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]
             out[k] = list(v)
         elif isinstance(v, dict) and isinstance(out.get(k), dict):
             out[k] = _deep_merge(out[k], v)
+        elif k in out and type(out[k]) is not type(v) and not (
+            isinstance(v, list) and isinstance(out[k], list)
+        ):
+            raise ConfigError(
+                f"type mismatch at '{k}': default is {type(out[k]).__name__}, "
+                f"user overlay is {type(v).__name__}"
+            )
         else:
             out[k] = v
     return out

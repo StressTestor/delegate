@@ -65,3 +65,11 @@ model = "openai/gpt-4"
 """)
     with pytest.raises(ConfigError, match="allowlist_suffix"):
         load_config(user_config_path=user)
+
+def test_shape_mismatch_fails_loud(tmp_path):
+    # User accidentally writes a scalar where base has a dict.
+    user = _write(tmp_path / "c.toml", """
+providers = "oops"
+""")
+    with pytest.raises(ConfigError, match="type mismatch"):
+        load_config(user_config_path=user)
