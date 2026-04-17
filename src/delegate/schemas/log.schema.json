@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "delegate log entry",
+  "type": "object",
+  "required": ["ts", "task_id", "chain", "provider", "model", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": {"type": "string", "format": "date-time"},
+    "task_id": {"type": "string"},
+    "batch_id": {"type": ["string", "null"]},
+    "chain": {"type": "string", "enum": ["code-gen", "bulk", "research"]},
+    "provider": {"type": "string"},
+    "model": {"type": "string"},
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok", "rate_limited", "auth_failure", "timeout", "cli_crash",
+        "network_error", "zen_trap", "allowlist_violation", "diff_invalid",
+        "circuit_broken", "sha_mismatch"
+      ]
+    },
+    "duration_s": {"type": ["number", "null"]},
+    "tokens_in": {"type": ["integer", "null"]},
+    "tokens_out": {"type": ["integer", "null"]},
+    "cost_usd_est": {"type": ["number", "null"]},
+    "worktree": {"type": ["string", "null"]},
+    "error": {"type": ["string", "null"]}
+  }
+}

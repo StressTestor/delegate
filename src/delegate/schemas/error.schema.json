@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "delegate chain_exhausted error",
+  "type": "object",
+  "required": ["error", "chain", "task_id", "attempts", "next_steps"],
+  "additionalProperties": false,
+  "properties": {
+    "error": {"type": "string", "const": "chain_exhausted"},
+    "chain": {"type": "string"},
+    "task_id": {"type": "string"},
+    "attempts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provider", "model", "status"],
+        "properties": {
+          "provider": {"type": "string"},
+          "model": {"type": "string"},
+          "status": {"type": "string"},
+          "detail": {"type": "string"}
+        }
+      }
+    },
+    "worktrees_retained": {"type": "array", "items": {"type": "string"}},
+    "next_steps": {"type": "string"}
+  }
+}

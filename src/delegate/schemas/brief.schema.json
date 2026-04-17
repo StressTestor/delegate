@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "delegate brief",
+  "type": "object",
+  "required": [
+    "brief_version", "task", "read", "write_allowed",
+    "new_file_patterns", "do_not_touch", "acceptance",
+    "commit_format", "constraints", "escape_hatch"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "brief_version": {"type": "string", "const": "1"},
+    "task": {"type": "string", "minLength": 1},
+    "read": {"type": "array", "items": {"type": "string"}},
+    "write_allowed": {"type": "array", "items": {"type": "string"}},
+    "new_file_patterns": {"type": "array", "items": {"type": "string"}},
+    "do_not_touch": {"type": "array", "items": {"type": "string"}},
+    "acceptance": {"type": "array", "items": {"type": "string"}},
+    "commit_format": {"type": "string", "minLength": 1},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "escape_hatch": {"type": "string", "minLength": 1}
+  }
+}
