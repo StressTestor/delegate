@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import fnmatch
 import os
 import re
 import subprocess
@@ -11,6 +10,7 @@ from typing import Any
 import httpx
 
 from .base import Outcome, Provider, ProviderResult
+from ..globs import matches_any
 
 MAX_RETRIES = 3
 SYSTEM_PROMPT = (
@@ -45,7 +45,7 @@ def _diff_touches_only_allowed(
     def _allowed(p: str) -> bool:
         if p in write_allowed:
             return True
-        if any(fnmatch.fnmatch(p, pat) for pat in new_file_patterns):
+        if matches_any(p, new_file_patterns):
             return True
         return False
 

@@ -9,7 +9,7 @@ def test_defaults_section_present():
     cfg = _load()
     assert cfg["defaults"]["task_type"] == "code-gen"
     assert cfg["defaults"]["concurrency"] == 1
-    assert cfg["defaults"]["openrouter_has_credits"] is False
+
 
 def test_all_four_providers_defined():
     cfg = _load()

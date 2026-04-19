@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+from .globs import matches_any
+
 
 @dataclass
 class Worktree:
@@ -53,19 +55,6 @@ class Category(str, Enum):
     ASK = "ask"
 
 
-def _glob_to_regex(pattern: str) -> re.Pattern[str]:
-    """Convert a glob pattern (with ** support) to a compiled regex."""
-    parts = [re.escape(p).replace(r"\*", "[^/]*") for p in pattern.split("**")]
-    joined = ".*".join(parts)
-    # /**/ -> zero or more path segments (** absorbs the slashes)
-    joined = joined.replace("/.*/" , "(?:.*/|)")
-    return re.compile("^" + joined + "$")
-
-
-def _matches_any(path: str, globs: list[str]) -> bool:
-    return any(_glob_to_regex(g).match(path) for g in globs)
-
-
 def categorize_change(
     path: str,
     *,
@@ -74,11 +63,11 @@ def categorize_change(
     do_not_touch: list[str],
 ) -> Category:
     # REJECT first — do_not_touch trumps everything.
-    if _matches_any(path, do_not_touch):
+    if matches_any(path, do_not_touch):
         return Category.REJECT
-    if path in write_allowed or _matches_any(path, write_allowed):
+    if path in write_allowed or matches_any(path, write_allowed):
         return Category.AUTO_APPROVE
-    if _matches_any(path, new_file_patterns):
+    if matches_any(path, new_file_patterns):
         return Category.AUTO_APPROVE
     return Category.ASK
 
