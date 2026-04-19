@@ -23,8 +23,8 @@ class KimiProvider(Provider):
         cwd: Path,
         timeout_s: int,
     ) -> ProviderResult:
-        cli = self.cfg.get("cli", "kimi")
-        cmd = [cli, "-m", model, "-p", prompt]
+        cli = self.cfg.get("cli", "kimi-code")
+        cmd = [cli, "-m", model, "-y", "-p", prompt]
         start = time.monotonic()
         try:
             proc = subprocess.run(

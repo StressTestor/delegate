@@ -45,7 +45,7 @@ def test_kimi_invokes_correct_argv(mocker, tmp_path):
     p = KimiProvider("kimi-code", {"cli": "kimi"})
     p.invoke(model="k2p5", brief={}, prompt="do x", cwd=tmp_path, timeout_s=60)
     args, kwargs = mock_run.call_args
-    assert args[0] == ["kimi", "-m", "k2p5", "-p", "do x"]
+    assert args[0] == ["kimi", "-m", "k2p5", "-y", "-p", "do x"]
     assert kwargs["cwd"] == tmp_path
     assert kwargs["timeout"] == 60
     assert kwargs["capture_output"] is True

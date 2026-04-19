@@ -10,7 +10,7 @@ def test_load_defaults_only(tmp_path):
     # No user config → returns defaults as-is.
     cfg = load_config(user_config_path=tmp_path / "missing.toml")
     assert cfg["defaults"]["task_type"] == "code-gen"
-    assert cfg["providers"]["kimi-code"]["default_model"] == "k2p5"
+    assert cfg["providers"]["kimi-code"]["default_model"] == "kimi-code/kimi-for-coding"
 
 def test_scalar_deep_merge(tmp_path):
     user = _write(tmp_path / "c.toml", """
@@ -20,7 +20,7 @@ rpm_cap = 99
     cfg = load_config(user_config_path=user)
     assert cfg["providers"]["kimi-code"]["rpm_cap"] == 99
     # other keys survive
-    assert cfg["providers"]["kimi-code"]["default_model"] == "k2p5"
+    assert cfg["providers"]["kimi-code"]["default_model"] == "kimi-code/kimi-for-coding"
 
 def test_array_of_tables_replaces_entirely(tmp_path):
     user = _write(tmp_path / "c.toml", """

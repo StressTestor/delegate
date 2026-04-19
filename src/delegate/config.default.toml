@@ -16,9 +16,9 @@ failure_threshold = 0.5
 halt_on_trip = true
 
 [providers.kimi-code]
-cli = "kimi"
+cli = "kimi-code"
 rpm_cap = 150  # TODO verify moonshot subscription tier; Tier 1 observed = 200 rpm
-default_model = "k2p5"
+default_model = "kimi-code/kimi-for-coding"
 billing = "subscription"
 supports_edits = true
 
@@ -67,7 +67,7 @@ api = "https://openrouter.ai/api/v1/chat/completions"
 key_endpoint = "https://openrouter.ai/api/v1/key"
 api_key_env = "OPENROUTER_API_KEY"
 allowlist_suffix = ":free"
-default_model = "deepseek/deepseek-chat-v3.1:free"
+default_model = "qwen/qwen3-coder:free"
 rpm_cap = 15
 billing = "free"
 supports_edits = false
@@ -75,7 +75,7 @@ supports_edits = false
 # code-gen: kimi first (subscription coding specialty), opencode-go + gemini-pro, free fallback last
 [[chains.code-gen]]
 provider = "kimi-code"
-model = "k2p5"
+model = "kimi-code/kimi-for-coding"
 [[chains.code-gen]]
 provider = "opencode-go"
 model = "minimax-m2.5"
@@ -84,12 +84,12 @@ provider = "gemini-pro"
 model = "gemini-2.5-pro"
 [[chains.code-gen]]
 provider = "openrouter-free"
-model = "deepseek/deepseek-chat-v3.1:free"
+model = "qwen/qwen3-coder:free"
 
 # bulk: free first (that's what free tier is for), then flash, then opencode-go
 [[chains.bulk]]
 provider = "openrouter-free"
-model = "deepseek/deepseek-chat-v3.1:free"
+model = "qwen/qwen3-coder:free"
 [[chains.bulk]]
 provider = "gemini-flash"
 model = "gemini-2.5-flash"
@@ -106,4 +106,4 @@ provider = "opencode-go"
 model = "minimax-m2.5"
 [[chains.research]]
 provider = "openrouter-free"
-model = "deepseek/deepseek-chat-v3.1:free"
+model = "qwen/qwen3-coder:free"
