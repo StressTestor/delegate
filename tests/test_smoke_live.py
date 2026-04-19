@@ -25,7 +25,7 @@ TASK = 'Add a one-line docstring """Return a greeting string.""" inside the gree
 
 OPENCODE_CFG = {
     "cli": "opencode",
-    "allowlist": ["glm-5", "kimi-k2.5", "minimax-m2.5"],
+    "allowlist": ["opencode-go/glm-5", "opencode-go/kimi-k2.5", "opencode-go/minimax-m2.5"],
     "zen_fail_patterns": [
         "insufficient balance", "no resource package", "quota exceeded",
         "1008", "402", "opencode zen", "pay.?as.?you.?go",
@@ -63,7 +63,7 @@ def test_opencode_smoke(tmp_path: Path) -> None:
     (tmp_path / "hello.py").write_text(HELLO_PY)
     provider = OpencodeProvider("opencode-go", OPENCODE_CFG)
     result = provider.invoke(
-        model="minimax-m2.5",
+        model="opencode-go/minimax-m2.5",
         brief={"read": ["hello.py"], "write_allowed": ["hello.py"]},
         prompt=TASK,
         cwd=tmp_path,
@@ -73,7 +73,7 @@ def test_opencode_smoke(tmp_path: Path) -> None:
         f"opencode returned {result.outcome.value}: {result.detail!r}"
     )
     content = (tmp_path / "hello.py").read_text()
-    assert "greet" in content, "hello.py was cleared or truncated"
+    assert "Return a greeting string" in content, f"docstring not added; file:\n{content}"
 
 
 def test_gemini_smoke(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -93,7 +93,7 @@ def test_gemini_smoke(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         f"gemini returned {result.outcome.value}: {result.detail!r}"
     )
     content = (tmp_path / "hello.py").read_text()
-    assert "greet" in content, "hello.py was cleared or truncated"
+    assert "Return a greeting string" in content, f"docstring not added; file:\n{content}"
 
 
 def test_openrouter_smoke(tmp_path: Path) -> None:

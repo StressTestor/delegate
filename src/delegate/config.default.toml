@@ -24,8 +24,8 @@ supports_edits = true
 
 [providers.opencode-go]
 cli = "opencode"
-allowlist = ["glm-5", "kimi-k2.5", "minimax-m2.5"]
-default_model = "minimax-m2.5"
+allowlist = ["opencode-go/glm-5", "opencode-go/kimi-k2.5", "opencode-go/minimax-m2.5"]
+default_model = "opencode-go/minimax-m2.5"
 rpm_cap = 60  # TODO verify — opencode go uses $-based limits, not rpm; conservative placeholder
 billing = "subscription"
 supports_edits = true
@@ -78,7 +78,7 @@ provider = "kimi-code"
 model = "kimi-code/kimi-for-coding"
 [[chains.code-gen]]
 provider = "opencode-go"
-model = "minimax-m2.5"
+model = "opencode-go/minimax-m2.5"
 [[chains.code-gen]]
 provider = "gemini-pro"
 model = "gemini-2.5-pro"
@@ -95,7 +95,7 @@ provider = "gemini-flash"
 model = "gemini-2.5-flash"
 [[chains.bulk]]
 provider = "opencode-go"
-model = "minimax-m2.5"
+model = "opencode-go/minimax-m2.5"
 
 # research: gemini-pro first (long context wins), opencode-go, free fallback
 [[chains.research]]
@@ -103,7 +103,7 @@ provider = "gemini-pro"
 model = "gemini-2.5-pro"
 [[chains.research]]
 provider = "opencode-go"
-model = "minimax-m2.5"
+model = "opencode-go/minimax-m2.5"
 [[chains.research]]
 provider = "openrouter-free"
 model = "qwen/qwen3-coder:free"

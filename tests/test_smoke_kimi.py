@@ -33,4 +33,4 @@ def test_kimi_smoke(tmp_path: Path) -> None:
     )
     # Verify the file was actually touched.
     content = (tmp_path / "hello.py").read_text()
-    assert "greet" in content, "hello.py was cleared or truncated"
+    assert "Return a greeting string" in content, f"docstring not added; file:\n{content}"

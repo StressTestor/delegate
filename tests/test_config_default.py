@@ -18,7 +18,7 @@ def test_all_four_providers_defined():
 
 def test_opencode_allowlist_is_exact():
     cfg = _load()
-    assert set(cfg["providers"]["opencode-go"]["allowlist"]) == {"glm-5", "kimi-k2.5", "minimax-m2.5"}
+    assert set(cfg["providers"]["opencode-go"]["allowlist"]) == {"opencode-go/glm-5", "opencode-go/kimi-k2.5", "opencode-go/minimax-m2.5"}
 
 def test_openrouter_requires_free_suffix():
     cfg = _load()
