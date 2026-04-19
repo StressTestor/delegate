@@ -11,6 +11,7 @@ from importlib.resources import files
 from .brief import render_prompt
 from .logger import Logger
 from .providers import build_provider
+from .ratelimit import RateLimiter
 from .worktree import (
     spawn_worktree, reset_worktree, merge_worktree,
     MergeOutcome, ShaMismatch, MergeAborted,
@@ -21,6 +22,13 @@ _ERROR_SCHEMA = json.loads(
     files("delegate.schemas").joinpath("error.schema.json").read_text()
 )
 _ERROR_VALIDATOR = Draft202012Validator(_ERROR_SCHEMA)
+
+
+_LIMITERS: dict[str, RateLimiter] = {}
+
+
+def _limiter_for(pname: str, pcfg: dict[str, Any]) -> RateLimiter:
+    return _LIMITERS.setdefault(pname, RateLimiter(rpm=int(pcfg.get("rpm_cap", 60))))
 
 
 class ChainExhausted(RuntimeError):
@@ -71,6 +79,7 @@ def run_single_task(
             reset_worktree(wt)
             (wt.path / ".delegate-brief.json").write_text(json.dumps(brief, indent=2))
 
+        _limiter_for(pname, pcfg).acquire()
         result = provider.invoke(
             model=model, brief=brief, prompt=prompt, cwd=invoke_cwd, timeout_s=timeout_s,
         )
