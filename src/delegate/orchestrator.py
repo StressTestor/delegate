@@ -118,12 +118,13 @@ def run_single_task(
             if wt:
                 try:
                     with _MERGE_LOCK:
-                        # Refresh base_sha to current HEAD so SHA pin check
-                        # passes even after a prior bulk merge advanced HEAD.
-                        wt.base_sha = subprocess.run(
-                            ["git", "-C", str(cwd), "rev-parse", "HEAD"],
-                            check=True, capture_output=True, text=True,
-                        ).stdout.strip()
+                        if batch_id is not None:
+                            # Bulk: prior merges in the same batch advanced HEAD;
+                            # refresh so SHA pin passes for this task.
+                            wt.base_sha = subprocess.run(
+                                ["git", "-C", str(cwd), "rev-parse", "HEAD"],
+                                check=True, capture_output=True, text=True,
+                            ).stdout.strip()
                         merge_outcome = merge_worktree(
                             wt, cwd=cwd,
                             write_allowed=brief["write_allowed"],

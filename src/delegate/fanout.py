@@ -64,7 +64,8 @@ def run_bulk(
             )
             return (file, True, "")
         except ChainExhausted as e:
-            return (file, False, str(e.structured["attempts"][-1].get("status", "unknown")))
+            last = e.structured["attempts"][-1] if e.structured["attempts"] else {}
+            return (file, False, last.get("status", "unknown"))
 
     futures: list[Future] = []
     with ThreadPoolExecutor(max_workers=eff_conc) as ex:
