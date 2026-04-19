@@ -132,3 +132,25 @@ def test_merge_ask_paths_declined(tmp_path):
     assert outcome == MergeOutcome.ASK_DECLINED
     # No commit -- repo file unchanged.
     assert (repo / "a.txt").read_text() == "hello\n"
+
+
+def test_merge_new_file_via_new_file_patterns(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _init_repo(repo)
+    wt_root = tmp_path / "wt"
+    wt_root.mkdir()
+    wt = spawn_worktree(cwd=repo, worktree_root=wt_root, task_slug="t")
+
+    (wt.path / "src").mkdir()
+    (wt.path / "src" / "new.py").write_text("# new\n")
+    outcome = merge_worktree(
+        wt, cwd=repo,
+        write_allowed=[],
+        new_file_patterns=["src/**/*.py"],
+        do_not_touch=[],
+        commit_format="feat: new file",
+        delegated_to="test/new",
+    )
+    assert outcome == MergeOutcome.MERGED
+    assert (repo / "src" / "new.py").exists()

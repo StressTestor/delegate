@@ -106,7 +106,16 @@ def _changed_paths(wt_path: Path) -> list[str]:
         segment = line[3:]
         if " -> " in segment:
             segment = segment.split(" -> ", 1)[1]
-        paths.append(segment.strip())
+        segment = segment.strip()
+        if segment.endswith("/"):
+            # Untracked directory -- expand to individual file paths.
+            expanded = subprocess.run(
+                ["git", "-C", str(wt_path), "ls-files", "--others", "--exclude-standard", segment],
+                check=True, capture_output=True, text=True,
+            ).stdout.splitlines()
+            paths.extend(expanded)
+        else:
+            paths.append(segment)
     return paths
 
 
@@ -194,6 +203,10 @@ def merge_worktree(
         input=diff, text=True, capture_output=True,
     )
     if apply.returncode != 0:
+        subprocess.run(
+            ["git", "-C", str(cwd), "checkout", "HEAD", "--", "."],
+            capture_output=True,
+        )
         raise MergeAborted(
             f"git apply --3way failed: {apply.stderr.strip()}. Worktree retained at {wt.path}"
         )
@@ -207,6 +220,14 @@ def merge_worktree(
             check=True, capture_output=True,
         )
     except subprocess.CalledProcessError as e:
+        subprocess.run(
+            ["git", "-C", str(cwd), "reset", "HEAD", "--", *paths],
+            capture_output=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(cwd), "checkout", "HEAD", "--", "."],
+            capture_output=True,
+        )
         raise MergeAborted(
             f"failed to stage/commit: {e.stderr.strip()}. Worktree retained at {wt.path}"
         ) from e
