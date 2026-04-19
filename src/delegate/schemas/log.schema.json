@@ -16,7 +16,7 @@
       "enum": [
         "ok", "rate_limited", "auth_failure", "timeout", "cli_crash",
         "network_error", "zen_trap", "allowlist_violation", "diff_invalid",
-        "circuit_broken", "sha_mismatch"
+        "circuit_broken", "sha_mismatch", "ask_declined", "merge_aborted"
       ]
     },
     "duration_s": {"type": ["number", "null"], "minimum": 0},

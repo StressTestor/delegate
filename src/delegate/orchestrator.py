@@ -11,9 +11,8 @@ from importlib.resources import files
 from .brief import render_prompt
 from .logger import Logger
 from .providers import build_provider
-from .providers.base import Outcome
 from .worktree import (
-    spawn_worktree, reset_worktree, merge_worktree, cleanup_worktree,
+    spawn_worktree, reset_worktree, merge_worktree,
     MergeOutcome, ShaMismatch, MergeAborted,
 )
 
@@ -59,9 +58,6 @@ def run_single_task(
     wt = None
     if _needs_worktree(task_type):
         wt = spawn_worktree(cwd=cwd, worktree_root=worktree_root, task_slug=brief["task"])
-        (wt.path / ".delegate-brief.json").write_text(
-            json.dumps(brief, indent=2)
-        )
 
     invoke_cwd = wt.path if wt else cwd
 
@@ -73,10 +69,14 @@ def run_single_task(
 
         if wt:
             reset_worktree(wt)
+            (wt.path / ".delegate-brief.json").write_text(json.dumps(brief, indent=2))
 
         result = provider.invoke(
             model=model, brief=brief, prompt=prompt, cwd=invoke_cwd, timeout_s=timeout_s,
         )
+
+        if wt:
+            (wt.path / ".delegate-brief.json").unlink(missing_ok=True)
 
         # ALWAYS write log line first, before any fail decision.
         log_entry = {
@@ -90,7 +90,7 @@ def run_single_task(
             "duration_s": result.duration_s,
             "tokens_in": result.tokens_in,
             "tokens_out": result.tokens_out,
-            "cost_usd_est": result.cost_usd_est if result.cost_usd_est is not None else 0.0,
+            "cost_usd_est": result.cost_usd_est,
             "worktree": str(wt.path) if wt else None,
             "error": result.detail or None,
         }
@@ -117,6 +117,7 @@ def run_single_task(
                     if merge_outcome == MergeOutcome.MERGED:
                         return {"status": "ok", "provider": pname, "model": model, "task_id": task_id}
                     else:
+                        attempts[-1]["status"] = "ask_declined"
                         attempts[-1]["detail"] = "user declined merge"
                         worktrees_retained.append(str(wt.path))
                         break
@@ -130,6 +131,7 @@ def run_single_task(
                     logger.write(log_entry)
                     break
                 except MergeAborted as e:
+                    attempts[-1]["status"] = "merge_aborted"
                     attempts[-1]["detail"] = str(e)
                     worktrees_retained.append(str(wt.path))
                     break
