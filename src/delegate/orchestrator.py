@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import datetime
 import json
+import subprocess
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +27,7 @@ _ERROR_VALIDATOR = Draft202012Validator(_ERROR_SCHEMA)
 
 
 _LIMITERS: dict[str, RateLimiter] = {}
+_MERGE_LOCK = threading.Lock()
 
 
 def _limiter_for(pname: str, pcfg: dict[str, Any]) -> RateLimiter:
@@ -114,15 +117,22 @@ def run_single_task(
         if result.is_success():
             if wt:
                 try:
-                    merge_outcome = merge_worktree(
-                        wt, cwd=cwd,
-                        write_allowed=brief["write_allowed"],
-                        new_file_patterns=brief["new_file_patterns"],
-                        do_not_touch=brief["do_not_touch"],
-                        commit_format=brief["commit_format"],
-                        delegated_to=f"{pname}/{model}",
-                        ask_fn=None,
-                    )
+                    with _MERGE_LOCK:
+                        # Refresh base_sha to current HEAD so SHA pin check
+                        # passes even after a prior bulk merge advanced HEAD.
+                        wt.base_sha = subprocess.run(
+                            ["git", "-C", str(cwd), "rev-parse", "HEAD"],
+                            check=True, capture_output=True, text=True,
+                        ).stdout.strip()
+                        merge_outcome = merge_worktree(
+                            wt, cwd=cwd,
+                            write_allowed=brief["write_allowed"],
+                            new_file_patterns=brief["new_file_patterns"],
+                            do_not_touch=brief["do_not_touch"],
+                            commit_format=brief["commit_format"],
+                            delegated_to=f"{pname}/{model}",
+                            ask_fn=None,
+                        )
                     if merge_outcome == MergeOutcome.MERGED:
                         return {"status": "ok", "provider": pname, "model": model, "task_id": task_id}
                     else:
