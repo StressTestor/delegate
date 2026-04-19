@@ -12,6 +12,7 @@ from importlib.resources import files
 
 from .brief import render_prompt
 from .logger import Logger
+from .progress import Heartbeat
 from .providers import build_provider
 from .ratelimit import RateLimiter
 from .worktree import (
@@ -83,9 +84,11 @@ def run_single_task(
             (wt.path / ".delegate-brief.json").write_text(json.dumps(brief, indent=2))
 
         _limiter_for(pname, pcfg).acquire()
-        result = provider.invoke(
-            model=model, brief=brief, prompt=prompt, cwd=invoke_cwd, timeout_s=timeout_s,
-        )
+        hb = Heartbeat(interval_s=15.0)
+        with hb.running(label=f"{pname}/{model} task={task_id}"):
+            result = provider.invoke(
+                model=model, brief=brief, prompt=prompt, cwd=invoke_cwd, timeout_s=timeout_s,
+            )
 
         if wt:
             (wt.path / ".delegate-brief.json").unlink(missing_ok=True)
