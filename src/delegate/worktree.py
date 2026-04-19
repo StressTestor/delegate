@@ -4,6 +4,7 @@ import re
 import subprocess
 import time
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 
 
@@ -43,3 +44,39 @@ def reset_worktree(wt: Worktree) -> None:
 
 def cleanup_worktree(wt: Worktree, *, cwd: Path) -> None:
     _git(cwd, "worktree", "remove", "--force", str(wt.path))
+
+
+class Category(str, Enum):
+    AUTO_APPROVE = "auto_approve"
+    REJECT = "reject"
+    ASK = "ask"
+
+
+def _glob_to_regex(pattern: str) -> re.Pattern[str]:
+    """Convert a glob pattern (with ** support) to a compiled regex."""
+    parts = [re.escape(p).replace(r"\*", "[^/]*") for p in pattern.split("**")]
+    joined = ".*".join(parts)
+    # /**/ -> zero or more path segments (** absorbs the slashes)
+    joined = joined.replace("/.*/" , "(?:.*/|)")
+    return re.compile("^" + joined + "$")
+
+
+def _matches_any(path: str, globs: list[str]) -> bool:
+    return any(_glob_to_regex(g).match(path) for g in globs)
+
+
+def categorize_change(
+    path: str,
+    *,
+    write_allowed: list[str],
+    new_file_patterns: list[str],
+    do_not_touch: list[str],
+) -> Category:
+    # REJECT first — do_not_touch trumps everything.
+    if _matches_any(path, do_not_touch):
+        return Category.REJECT
+    if path in write_allowed or _matches_any(path, write_allowed):
+        return Category.AUTO_APPROVE
+    if _matches_any(path, new_file_patterns):
+        return Category.AUTO_APPROVE
+    return Category.ASK
