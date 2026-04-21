@@ -7,3 +7,5 @@ dist/
 build/
 state/
 .delegate-worktrees/
+CLAUDE.md
+AGENTS.md
