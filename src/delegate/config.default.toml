@@ -1,7 +1,7 @@
 [defaults]
 task_type = "code-gen"
 concurrency = 1
-worktree_root = "/Volumes/onn/.delegate-worktrees"
+worktree_root = "~/.delegate-worktrees"
 log_path = "~/.claude/skills/delegate/state/delegate.jsonl"
 
 [timeouts]
