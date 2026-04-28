@@ -24,11 +24,7 @@ mkdir -p "$USER_CFG_DIR"
 if [ ! -f "$USER_CFG_DIR/config.toml" ]; then
   cat > "$USER_CFG_DIR/config.toml" <<'EOF'
 # delegate user config — overrides config.default.toml
-# See docs/superpowers/specs/2026-04-17-delegate-skill-design.md for schema.
-#
-# If you've purchased $10+ in OpenRouter credits, uncomment to unlock 1000/day:
-# [defaults]
-# openrouter_has_credits = true
+# See config.default.toml in this repo for the full schema and defaults.
 EOF
 fi
 

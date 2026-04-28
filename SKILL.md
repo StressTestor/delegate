@@ -19,9 +19,8 @@ Manual-only v1. Invoke as `/delegate "task"` or `delegate "task"` from shell.
 
 1. Clone this repo to `/Volumes/onn/delegate/`.
 2. Run `./install.sh`. Installs package in editable mode, symlinks skill dir, writes `~/.claude/commands/delegate.md`.
-3. Ensure the CLIs referenced by your chains are on PATH: `kimi`, `opencode`, `gemini`.
+3. Ensure the CLIs referenced by your chains are on PATH: `kimi-code`, `opencode`, `gemini`.
 4. If you use openrouter-free: `export OPENROUTER_API_KEY=sk-...` in `~/.zshrc`.
-5. **If you've ever purchased $10+ in OpenRouter credits**, set `openrouter_has_credits = true` in `~/.config/delegate/config.toml` to unlock the 1000-requests/day ceiling. Otherwise you'll hit the 50/day ceiling.
 
 ## usage
 

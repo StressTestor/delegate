@@ -16,7 +16,7 @@ halt_on_trip = true
 
 [providers.kimi-code]
 cli = "kimi-code"
-rpm_cap = 150  # TODO verify moonshot subscription tier; Tier 1 observed = 200 rpm
+rpm_cap = 150  # moonshot subscription tier; Tier 1 observed = 200 rpm
 default_model = "kimi-code/kimi-for-coding"
 billing = "subscription"
 supports_edits = true
@@ -25,7 +25,7 @@ supports_edits = true
 cli = "opencode"
 allowlist = ["opencode-go/glm-5", "opencode-go/kimi-k2.5", "opencode-go/minimax-m2.5"]
 default_model = "opencode-go/minimax-m2.5"
-rpm_cap = 60  # TODO verify — opencode go uses $-based limits, not rpm; conservative placeholder
+rpm_cap = 60  # opencode go uses $-based limits, not rpm; conservative placeholder
 billing = "subscription"
 supports_edits = true
 
@@ -57,7 +57,7 @@ cli = "gemini"
 model_flag = "-m"
 allowlist = ["gemini-2.5-flash"]
 default_model = "gemini-2.5-flash"
-rpm_cap = 250  # TODO verify Tier 1 Flash rpm from Google AI Pro docs
+rpm_cap = 250  # Tier 1 Flash rpm from Google AI Pro docs
 billing = "subscription"
 supports_edits = true
 

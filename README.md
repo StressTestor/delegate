@@ -36,7 +36,7 @@ first provider to return OK wins. hard failures (zen-trap, allowlist violation) 
 ./install.sh
 ```
 
-installs the package (editable), creates the slash command at `~/.claude/commands/delegate.md`, and seeds a user config at `~/.claude/skills/delegate/config.toml`.
+installs the package (editable), creates the slash command at `~/.claude/commands/delegate.md`, and seeds a user config at `~/.config/delegate/config.toml`.
 
 requires: `kimi-code` (pipx), `opencode`, `gemini` CLIs on PATH. `OPENROUTER_API_KEY` in env for openrouter.
 
@@ -93,7 +93,7 @@ every invocation writes a JSONL entry to `~/.claude/skills/delegate/state/delega
 
 ## config
 
-user config at `~/.claude/skills/delegate/config.toml`. deep-merged over defaults. example:
+user config at `~/.config/delegate/config.toml`. deep-merged over defaults. example:
 
 ```toml
 [defaults]
